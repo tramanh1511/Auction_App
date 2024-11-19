@@ -1,0 +1,73 @@
+/* General body styles */
+body {
+    margin: 0;
+    font-family: 'Roboto', 'Arial', sans-serif; /* Clean and widely supported font */
+    -webkit-font-smoothing: antialiased; /* Smooth font rendering on WebKit browsers */
+    -moz-osx-font-smoothing: grayscale; /* Smooth font rendering on Firefox on Mac */
+    background-color: #ffffff; /* White background */
+    color: #333333; /* Dark grey text for better readability */
+    line-height: 1.6; /* Improved line spacing for readability */
+    padding: 0;
+    box-sizing: border-box; /* Prevents padding/margin issues */
+}
+
+/* Code styling */
+code {
+    font-family: 'Source Code Pro', Menlo, Monaco, Consolas, 'Courier New', monospace; 
+    background-color: #f4f4f4; /* Light background for code blocks */
+    padding: 2px 4px; /* Padding around code */
+    border-radius: 4px; /* Slight rounding of code block */
+    color: #d63384; /* Soft pink color for code text */
+}
+
+/* Custom font face for UKNumberPlate */
+@font-face {
+    font-family: 'UKNumberPlate';
+    src: local('UKNumberPlate'), url(./assets/fonts/UKNumberPlate.ttf) format('truetype');
+}
+
+/* Add custom styles to headings, buttons, etc. for a cohesive look */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Roboto', sans-serif;
+    color: #111111; /* Dark color for headings */
+    margin-bottom: 0.5rem;
+}
+
+a {
+    color: #388e3c; /* Green color for links */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    font-family: 'Roboto', sans-serif;
+    background-color: #388e3c; /* Green button background */
+    color: #ffffff; /* White text on buttons */
+    border: none;
+    border-radius: 8px; /* Rounded corners */
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #4caf50; /* Lighter green on hover */
+}
+
+/* Responsive media queries for better mobile layout */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px; /* Smaller font size on mobile */
+    }
+
+    h1 {
+        font-size: 1.5rem; /* Adjusted size for h1 on smaller screens */
+    }
+
+    button {
+        padding: 6px 12px; /* Smaller button on mobile */
+    }
+}

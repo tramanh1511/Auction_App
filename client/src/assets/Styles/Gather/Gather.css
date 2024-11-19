@@ -1,0 +1,42 @@
+.background {
+  width: 80%;
+  padding: 1rem;
+}
+
+#GatherButton {
+  background: #fdfdfd;
+  color: #F8F6E3;
+  font-weight: bold;
+  height: 7vh;
+  font-size: 20px;
+}
+
+#GatherButton:focus {
+  background: #F8F6E3;
+  color: #fdfdfd;
+}
+
+#GatherMain {
+  align-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+#paper {
+  background-color: #fdfdfd;
+  padding: 1rem;
+}
+
+@media (max-width: 800px) {
+  #paper {
+    width: 100% !important;
+  }
+
+  #GatherButton {
+    width: 100%;
+  }
+
+  #GatherSubmit {
+    width: 100%;
+  }
+}
