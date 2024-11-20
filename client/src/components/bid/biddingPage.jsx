@@ -51,7 +51,6 @@ function Bidding() {
                 console.error('Fetch error:', error);
             }
         };
-
         const fetchHighestPrice = async () => {
             try {
                 const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);

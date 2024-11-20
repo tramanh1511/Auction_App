@@ -34,6 +34,10 @@ const auctionsSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
+    request: {
+        type: String,
+        required: true,
+    },
     lastUpdated: {
         type: String,
         required: true,

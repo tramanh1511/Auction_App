@@ -1,6 +1,6 @@
 const {
     getAuctionById,
-    approveAuctionById,
+    approveAuctionReqById,
     getAuctionByUserId,
     createNewAuction,
     deleteAuctionById,
@@ -36,27 +36,40 @@ async function httpGetAuctionById(req, res) {
 }
 
 async function httpGetAuctionByUserId(req, res) {
-    const userId = req.params.id;
+    const userId = req.params.id
     console.log(userId);
-    
     const auction = await getAuctionByUserId(userId);
     if (!auction) {
-        return res.status(404).json({ error: 'Auction not found' });
+        return res.status(404).json({
+            error: 'Auction not found',
+        });
     }
 
     console.log(auction);
+
     return res.status(200).json(auction);
 }
 
-async function httpApproveAuctionById(req, res) {
+async function httpApproveAuctionReqById(req, res) {
     const auctionId = req.params.id;
-    const auction = await approveAuctionById(auctionId);
+    const updateData = req.body;
 
-    if (!auction) {
-        return res.status(400).json({ error: "Auction not found" });
+    try {
+        const auction = await approveAuctionReqById(auctionId, updateData);
+
+        if (!auction) {
+            return res.status(400).json({
+                error: "Auction not found"
+            });
+        }
+
+        return res.status(200).json(auction);
+    } catch (error) {
+        console.error("Error updating auction:", error);
+        return res.status(500).json({
+            error: "Internal server error"
+        });
     }
-
-    return res.status(200).json(auction);
 }
 
 async function httpUpdateAuctionById(req, res) {
@@ -105,7 +118,7 @@ module.exports = {
     httpGetAuctionById,
     httpGetAuctionByUserId,
     httpAddNewAuction,
-    httpApproveAuctionById,
+    httpApproveAuctionReqById,
     httpDeleteAuctionById,
     httpUpdateAuctionById,
 };

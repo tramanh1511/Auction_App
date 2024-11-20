@@ -7,11 +7,14 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
-import { Button } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField } from "@mui/material";
 
 
 function ListUser() {
     const [userList, setUserList] = useState([]);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deletionReason, setDeletionReason] = useState('');
+    const [userIdToDelete, setUserIdToDelete] = useState(null);
 
     useEffect(() => {
         fetchAllUsers();
@@ -28,21 +31,50 @@ function ListUser() {
 
         }
     }
-    const handleDelete = async (userId) => {
+    // const handleDelete = async (userId) => {
+    //     const confirmDelete = window.confirm("Are you sure?");
+    //     if (confirmDelete) {
+    //         try {
+    //             const response = await axios.delete(`http://localhost:3000/api/v1/users/${userId}`);
+    //             if (response.status === 200) {
+    //                 window.alert('User deleted successfully!')
+    //                 fetchAllUsers();
+    //             }
+    //         } catch (error) {
+    //             console.error('Delete error:', error);
+    //         }
+    //     }
+    // };
+
+    const handleDelete = (userId) => {
         const confirmDelete = window.confirm("Are you sure?");
         if (confirmDelete) {
-            try {
-                const response = await axios.delete(`http://localhost:3000/api/v1/users/${userId}`);
-                if (response.status === 200) {
-                    window.alert('User deleted successfully!')
-                    fetchAllUsers();
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-            }
+            setUserIdToDelete(userId);
+            setDeleteDialogOpen(true);
         }
     };
 
+
+    const handleConfirmDelete = async () => {
+        try {
+            const response = await axios.delete(`http://localhost:3000/api/v1/users/${userIdToDelete}`, {
+                data: { reason: deletionReason }
+            });
+            if (response.status === 200) {
+                window.alert('User deleted successfully!');
+                fetchAllUsers();
+                setDeleteDialogOpen(false);
+                setDeletionReason('');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+        }
+    };
+
+    const handleClose = () => {
+        setDeleteDialogOpen(false);
+        setDeletionReason('');
+    };
 
     return (
         <div>
@@ -75,6 +107,27 @@ function ListUser() {
                     </React.Fragment>
                 ))}
             </List>
+            <Dialog open={deleteDialogOpen} onClose={handleClose}>
+                <DialogTitle>Confirm Delete</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>Please enter the reason for deleting this user:</DialogContentText>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="reason"
+                        label="Deletion Reason"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                        value={deletionReason}
+                        onChange={e => setDeletionReason(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={handleConfirmDelete} color="primary">Confirm Delete</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }

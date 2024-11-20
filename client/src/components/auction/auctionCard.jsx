@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { green } from '@mui/material/colors';
 
 function AuctionCard({ auction }) {
-    const { auctionId, imageUrl, title, status, initPrice, startTime, endTime } = auction;
+    const { auctionId, imageUrl, title, status, initPrice, startTime, endTime, approved, request } = auction;
     return (
         <Link to={`/${auctionId}`} style={{ color: '#66bb6a' }}>
             <Card

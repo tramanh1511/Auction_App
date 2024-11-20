@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, } from 'react-router-dom';
 import { Box, Typography, Card, Button } from '@mui/material';
-import { format } from 'date-fns';
+import { format } from "date-fns";
+import axios from 'axios';
 
 const styles = {
     title: {
@@ -144,24 +144,20 @@ function AuctionDetail() {
         // handleRegister();
     }, [auctionId, currentUser]);
 
-    const handleDelete = async () => {
-        const confirmDelete = window.confirm('Are you sure?');
-        if (confirmDelete) {
-            try {
-                const response = await fetch(`http://localhost:3000/api/v1/auctions/${auctionId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) {
-                    window.alert('Auction deleted successfully');
-                    window.history.back();
-                } else {
-                    console.error('Failed to delete auction');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
+    const handleDelete = async (e) => {
+        const confirmDelete = window.confirm("Are you sure?");
+
+        if(confirmDelete) {
+            const response = await axios.patch(`http://localhost:3000/api/v1/auctions/${auctionId}`, {
+                request: "Delete",
+                approved: false
+            });
+            if(response.status === 200) {
+                window.alert("Deletion request submitted for Admin review.");
+                window.history.back()
             }
         }
-    };
+    }
 
     const handleUnregister = async () => {
         // Show confirmation dialog before proceeding
@@ -237,7 +233,6 @@ function AuctionDetail() {
                 },
                 body: JSON.stringify(updatedAuctionData)
             });
-
             if (response.ok) {
                 alert('Đăng ký thành công!');
                 setIsRegistered(true);
@@ -247,7 +242,6 @@ function AuctionDetail() {
                 alert('Đăng ký không thành công. Vui lòng thử lại sau.');
                 console.error(`Failed to register to auction. Status: ${response.status}`);
             }
-
             console.log("Auction register in handle", auction.currentUsers);
         } catch (error) {
             console.error('Registration error in handle:', error);
