@@ -1,0 +1,55 @@
+#button {
+  background-color: #F8F6E3;
+  color: #fdfdfd;
+  border-radius: 40px;
+  background-image: linear-gradient(90.67deg, #01ab6f 0.13%, #00b49e 95.62%);
+}
+
+
+#button:hover {
+  background-color: #467061;
+  color: #bcbcbc;
+}
+
+#thirdPanel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  background-color: #f1f2ec;
+}
+
+#icon {
+  font-size: 120px;
+  color: #F8F6E3;
+}
+
+#content {
+  padding: 1em;
+  width: 50%;
+  height: 25%;
+  background-color: #faf6ed;
+}
+
+#quote {
+  width: 55%;
+  text-align: center;
+  font-size: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: bold;
+  color: #F8F6E3;
+}
+
+#landingMenu {
+  margin-top: 13px;
+  height: 180px;
+}
+
+.MuiFormLabel-root.Mui-focused {
+  color: #467061 !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #F8F6E3 !important;
+}
