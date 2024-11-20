@@ -4,77 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, Button } from '@mui/material';
 import { format } from 'date-fns';
 
-// const styles = {
-//     title: {
-//         fontWeight: 'bold',
-//         width: '200px', // Fixed width for labels
-//     },
-//     content: {
-//         flex: 1, // Take up the remaining space
-//         marginLeft: '10px',  // Adds space between label and content
-//     },
-//     initPrice: {
-//         fontSize: '2.4rem',
-//         fontWeight: '900',
-//         color: '#d32f2f',
-//     },
-//     highestPrice: {
-//         fontSize: '2.4rem',
-//         fontWeight: '900',
-//         color: '#388e3c',  // Green color for highest price
-//     },
-//     card: {
-//         padding: '2rem',
-//         width: '1000px',
-//         margin: 'auto',
-//         position: 'relative',
-//         marginTop: '20px',
-//         borderRadius: '16px',
-//         boxShadow: 3,
-//     },
-//     deleteButton: {
-//         position: 'absolute',
-//         right: '18px',
-//         color: 'red',
-//         fontWeight: 'bold',
-//     },
-//     buttonContainer: {
-//         display: 'flex',
-//         justifyContent: 'flex-end', // Căn chỉnh các nút về bên phải
-//         marginTop: '20px', // Khoảng cách trên giữa các nút và nội dung trên
-//     },
-//     biddingButton: {
-//         marginLeft: '10px', // Khoảng cách giữa nút Bidding và nút trước đó
-//         fontWeight: 'bold',
-//     },
-//     registerButton: {
-//         marginLeft: '10px', // Khoảng cách giữa nút Register và nút trước đó
-//         fontWeight: 'bold',
-//         backgroundColor: '#1976d2',
-//         color: 'white',
-//     },
-//     endedText: {
-//         position: 'absolute',
-//         right: '18px',
-//         marginTop: '60px',
-//         fontWeight: 'bold',
-//         color: 'error',
-//     },
-//     image: {
-//         borderRadius: '8px',
-//         boxShadow: 2,
-//         width: '60%',
-//     },
-//     row: {
-//         display: 'flex',
-//         alignItems: 'center',  // Aligns the label and content vertically centered
-//         marginBottom: '0.5rem',
-//     },
-//     rowContent: {
-//         marginLeft: '10px',  // Adds space between label and content
-//     },
-// };
-
 const styles = {
     title: {
         fontWeight: 'bold',
@@ -109,7 +38,12 @@ const styles = {
     },
     deleteButton: {
         color: '#ff1744',
+        marginLeft: '10px',
         fontWeight: 'bold',
+        backgroundColor: '#4caf50',
+        '&:hover': {
+            backgroundColor: '#45a049',
+        },
     },
     buttonContainer: {
         display: 'flex',
@@ -328,6 +262,29 @@ function AuctionDetail() {
         return <div>Loading...</div>;
     }
 
+const handleResult = async () => {//+
+    try {//+
+        const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);//+
+        const data = await response.json();//+
+        //+
+        if (data && data.userId) {//+
+            const userResponse = await fetch(`http://localhost:3000/api/v1/users/${data.userId}`);//+
+            const userData = await userResponse.json();//+
+            //+
+                alert(`Auction Result:
+                Winner: ${userData.name}
+                Winning Bid: $${data.price}
+                Auction Title: ${auction.title}`);
+        } else {//+
+            alert("No winner found for this auction.");//+
+        }//+
+    } catch (error) {//+
+        console.error('Error fetching result:', error);//+
+        alert("An error occurred while fetching the result.");//+
+    }//+
+};//+
+
+    
     const endTime = new Date(auction.endTime);
     const now = new Date();
     const checkTimeOutForBidding = now - endTime;
@@ -339,58 +296,66 @@ function AuctionDetail() {
                     Auction Detail
                 </Typography>
 
-                {checkTimeOutForBidding >= 0 && (
-                    <Typography variant="body1" sx={styles.endedText}>
-                        Auction has ended
-                    </Typography>
-                )}
-                <Box sx={styles.buttonContainer}>
-                    {checkTimeOutForBidding < 0 && !isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
-                        <Button
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <Box component="img" src={auction.imageUrl} sx={{ ...styles.image, maxWidth: '100%', height: 'auto', marginBottom: '20px' }} />
+
+                    <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                        {checkTimeOutForBidding < 0 && !isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                            <Button
+                                variant="contained"
+                                sx={{ ...styles.registerButton, minWidth: '120px' }}
+                                onClick={handleRegister}
+                            >
+                                Register
+                            </Button>
+                        )}
+
+                        {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                            <Button
+                                variant="contained"
+                                sx={{ ...styles.registerButton, minWidth: '120px' }}
+                                onClick={handleUnregister}
+                            >
+                                Unregister
+                            </Button>
+                        )}
+
+                        {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                            <Button
+                                variant="contained"
+                                sx={{ ...styles.biddingButton, minWidth: '120px' }}
+                                onClick={handleBidding}
+                            >
+                                Bidding
+                            </Button>
+                        )}
+
+                        {(userRole === 'admin' || auction.userId === currentUser) && (
+                            <Button
+                                variant="contained"
+                                sx={{ ...styles.deleteButton, minWidth: '120px' }}
+                                aria-label="delete"
+                                onClick={handleDelete}
+                            >
+                                Delete
+                            </Button>
+                        )}
+                        {checkTimeOutForBidding >= 0 && (
+                            <Button
                             variant="contained"
                             sx={styles.registerButton}
-                            onClick={handleRegister}
-                        >
-                            Register
-                        </Button>
-                    )}
-
-                    {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
-                        <Button
-                            variant="contained"
-                            sx={styles.registerButton}
-                            onClick={handleUnregister}
-                        >
-                            Unregister
-                        </Button>
-                    )}
-
-                    {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
-                        <Button
-                            variant="contained"
-                            sx={styles.biddingButton}
-                            onClick={handleBidding}
-                        >
-                            Bidding
-                        </Button>
-                    )}
+                            onClick={handleResult}
+                            >
+                            Auction has ended
+                            </Button>
+                        )}
+                    </Box>
                 </Box>
+
 
                 <Typography variant="body1" sx={{ marginTop: '0.5rem', fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                     {auction.title}
                 </Typography>
-
-
-                <Box component="img" src={auction.imageUrl} sx={styles.image} />
-                {(userRole === 'admin' || auction.userId === currentUser) && (
-                    <Button
-                        sx={styles.deleteButton}
-                        aria-label="delete"
-                        onClick={handleDelete}
-                    >
-                        Delete this auction
-                    </Button>
-                )}
 
 
                 {/* Start of Row for each section */}
