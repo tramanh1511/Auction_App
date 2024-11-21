@@ -9,15 +9,45 @@ import Stack from "@mui/material/Stack";
 import "../../assets/Styles/Landing/Landing.css";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import AuctionList from "../auction/auctionList";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 
 export default function BackToTop(props) {
   const match = useMediaQuery("(max-width:800px)");
   const [searchQuery, setSearchQuery] = useState("");
-  const [auctions, setAuctions] = useState(undefined);
+  // const [auctions, setAuctions] = useState(undefined);
+  const [upcomingAuctions, setUpcomingAuctions] = useState([]);
+  const [liveAuctions, setLiveAuctions] = useState([]);
+  const [completedAuctions, setCompletedAuctions] = useState([]);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    fetchAllAuctions();
+  }, []);
+
+  const fetchAllAuctions = async () => {
+    try {
+      const auctions = await fetchAuctions();
+      classifyAuctions(auctions);
+    } catch (err) {
+      console.error("Error fetching auctions:", err);
+      setError("Failed to fetch auctions. Please try again later.");
+    }
+  };
+
+  const fetchAuctions = async () => {
+    const apiUrl = "http://localhost:3000/api/v1/auctions/";
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return await response.json();
+  };
 
 
   const handleSearch = async (e) => {
@@ -26,19 +56,37 @@ export default function BackToTop(props) {
         setError('Please enter a search query.');
         return;
     }
+    // try {
+    //   const response = await fetchAuctionsByTitle(searchQuery);
+    //   console.log(response);
+    //   if (response.length === 0) {
+    //     setError('No results');
+    //     setAuctions(null);
+    //   }
+    //   else {
+    //     setAuctions(response);
+    //   }
+    // } catch (error) {
+    //   console.error("Search error:", error);
+    //   setError("No results");
+    // }
     try {
-      const response = await fetchAuctionsByTitle(searchQuery);
-      console.log(response);
-      if (response.length === 0) {
-        setError('No results');
-        setAuctions(null);
+      const auctions = await fetchAuctionsByTitle(searchQuery);
+      if (auctions.length === 0) {
+        setError("No results");
+        setUpcomingAuctions([]);
+        setLiveAuctions([]);
+        setCompletedAuctions([]);
+      } else {
+        classifyAuctions(auctions);
+        setError(null);
       }
-      else {
-        setAuctions(response);
-      }
-    } catch (error) {
-      console.error("Search error:", error);
+    } catch (err) {
+      console.error("Search error:", err);
       setError("No results");
+      setUpcomingAuctions([]);
+      setLiveAuctions([]);
+      setCompletedAuctions([]);
     }
   }
   const fetchAuctionsByTitle = async (title) => {
@@ -54,6 +102,33 @@ export default function BackToTop(props) {
     }
     const data = await response.json();
     return data;
+  };
+
+  const classifyAuctions = (auctions) => {
+    const now = new Date();
+    const upcoming = [];
+    const live = [];
+    const completed = [];
+
+    auctions.forEach((auction) => {
+      const startTime = new Date(auction.startTime);
+      const endTime = new Date(auction.endTime);
+      if (now < startTime) {
+        upcoming.push(auction);
+      } else if (now >= startTime && now <= endTime) {
+        live.push(auction);
+      } else if (now > endTime) {
+        completed.push(auction);
+      }
+    });
+
+    console.log(upcoming);
+    console.log(live);
+    console.log(completed);
+
+    setUpcomingAuctions(upcoming);
+    setLiveAuctions(live);
+    setCompletedAuctions(completed);
   };
 
   return (
@@ -130,8 +205,28 @@ export default function BackToTop(props) {
               </form>
               {error && <Typography color="error" sx={{ textAlign: "center", marginTop: 2 }}>{error}</Typography>}
             </Stack>
-            <Stack>
+            {/* <Stack>
             {auctions !== undefined ? <AuctionList auctions={auctions} /> : <AuctionList />}
+            </Stack> */}
+            <Stack spacing={4}>
+              <Box sx={{backgroundColor: "#c2edd4", padding: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: "bold", color: "#000" }}>
+                  Upcoming Auctions
+                </Typography>
+                <AuctionList auctions={upcomingAuctions} />
+              </Box>
+              <Box sx={{backgroundColor: "#c2edd4", padding: 2}}>
+                <Typography variant="h5" sx={{ fontWeight: "bold", color: "#000" }}>
+                  Live Auctions
+                </Typography>
+                <AuctionList auctions={liveAuctions} />
+              </Box>
+              <Box sx={{backgroundColor: "#c2edd4", padding: 2, }}>
+                <Typography variant="h5" sx={{ fontWeight: "bold", color: "#000" }}>
+                  Completed Auctions
+                </Typography>
+                <AuctionList auctions={completedAuctions} />
+              </Box>
             </Stack>
           </Paper>
         </Box>
