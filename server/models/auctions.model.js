@@ -24,13 +24,14 @@ async function getAuctionByUserId(userId) {
     return await Auction.find({ userId: userId })
 }
 
-async function approveAuctionById(auctionId) {
+async function approveAuctionReqById(auctionId, updateData) {
     const auction = await getAuctionById(auctionId);
     if (!auction) {
         return null;
     }
     const now = new Date().toLocaleString();
-    auction.approved = true;
+    auction.request = updateData.request;
+    auction.approved = updateData.approved;
     auction.lastUpdated = now;
     auction.status = "processing"
     auction.save();
@@ -73,13 +74,15 @@ async function createNewAuction(auction) {
         approved: false,
         lastUpdated: now,
         status: "waiting",
+        request: "Create",
         startTime: startTime,
         endTime: endTime,
         deposit: auction.deposit,
         stepPrice: auction.stepPrice,
         highestPrice: auction.highestPrice,
         currentUsers: auction.currentUsers,
-        winner: auction.winner
+        winner: auction.winner,
+        money: auction.money
     })
     await saveAuction(newAuction);
     // console.log(newAuction)
@@ -101,7 +104,7 @@ module.exports = {
     getAllAuctionsFalse,
     getAllAuctionsTrue,
     getAuctionById,
-    approveAuctionById,
+    approveAuctionReqById,
     getAuctionByUserId,
     createNewAuction,
     deleteAuctionById,

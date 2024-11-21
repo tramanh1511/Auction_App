@@ -45,7 +45,110 @@ function Header() {
   const userLoggedIn = localStorage.getItem('uid') !== null;
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#ffffff', boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', color: '#222831' }}>
+    //     <AppBar position="fixed" sx={{ backgroundColor: '#ffffff', boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', color: '#222831', zIndex: 1300, }}>
+    //       <Container maxWidth="xl">
+    //         <Toolbar disableGutters>
+    //           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+    //             <IconButton
+    //               size="large"
+    //               aria-label="menu"
+    //               onClick={handleOpenNavMenu}
+    //               color="inherit"
+    //             >
+    //               <MenuIcon />
+    //             </IconButton>
+    //             <Menu
+    //               anchorEl={anchorElNav}
+    //               open={Boolean(anchorElNav)}
+    //               onClose={handleCloseNavMenu}
+    //               sx={{ display: { xs: 'block', md: 'none' } }}
+    //             >
+    //               {pages.map((page, index) => (
+    //                 <MenuItem key={page} onClick={handleCloseNavMenu} component={Link} to={routes[index]}>
+    //                   <Typography textAlign="center">{page}</Typography>
+    //                 </MenuItem>
+    //               ))}
+    //             </Menu>
+    //           </Box>
+
+    //           {/* Hiển thị các nút trên màn hình lớn */}
+    //           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+    //             {pages.map((page, index) => (
+    //               <Typography
+    //                 key={page}
+    //                 component={Link}
+    //                 to={routes[index]}
+    //                 sx={{
+    //                   textDecoration: 'none',
+    //                   color: '#222831',
+    //                   mx: 2,
+    //                   fontWeight: 'bold',
+    //                   cursor: 'pointer',
+    //                   transition: 'color 0.3s',
+    //                   '&:hover': { color: '#4CAF50' }, // Hiệu ứng hover đổi màu
+    //                 }}
+    //               >
+    //                 {page}
+    //               </Typography>
+    //             ))}
+    //           </Box>
+
+    //           {/* Avatar và Menu người dùng */}
+    //           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+    //             <Typography sx={{ display: { xs: 'none', md: 'block' }, mr: 2, color: '#222831', fontWeight: 'bold' }}>
+    //               {localStorage.getItem('userName')}
+    //             </Typography>
+    //             {userLoggedIn ? (
+    //               <>
+    //                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
+    //                   <Avatar alt="User Avatar" sx={{ width: 32, height: 32 }} />
+    //                 </IconButton>
+    //                 <Menu
+    //                   anchorEl={anchorElUser}
+    //                   open={Boolean(anchorElUser)}
+    //                   onClose={handleCloseUserMenu}
+    //                   sx={{ mt: '45px' }}
+    //                 >
+    //                   <MenuItem component={Link} to="/profile">
+    //                     <Typography textAlign="center">Profile</Typography>
+    //                   </MenuItem>
+    //                   <MenuItem onClick={handleLogout}>
+    //                     <Typography textAlign="center">Logout</Typography>
+    //                   </MenuItem>
+    //                 </Menu>
+    //               </>
+    //             ) : (
+    //               <Typography
+    //                 onClick={() => navigate('/login')}
+    //                 sx={{
+    //                   textDecoration: 'none',
+    //                   color: '#222831',
+    //                   mx: 2,
+    //                   fontWeight: 'bold',
+    //                   cursor: 'pointer',
+    //                   transition: 'color 0.3s',
+    //                   '&:hover': { color: '#4CAF50' }, 
+    //                 }}
+    //               >
+    //                 Login
+    //               </Typography>
+    //             )}
+    //           </Box>
+    //         </Toolbar>
+    //       </Container>
+    //     </AppBar>
+    //   );
+    // }
+
+    <AppBar
+      position="fixed" // Đặt thanh header cố định
+      sx={{
+        backgroundColor: '#ffffff',
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+        color: '#222831',
+        zIndex: 1300, // Đảm bảo header hiển thị trên các thành phần khác
+      }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Menu Icon cho thiết bị nhỏ */}
@@ -65,8 +168,20 @@ function Header() {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page, index) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu} component={Link} to={routes[index]}>
-                  <Typography textAlign="center">{page}</Typography>
+                <MenuItem
+                  key={page}
+                  onClick={handleCloseNavMenu}
+                  component={Link}
+                  to={routes[index]}
+                >
+                  <Typography
+                    textAlign="center"
+                    sx={{
+                      '&:hover': { backgroundColor: '#f0f0f0' }, // Thêm hiệu ứng hover bôi màu toàn ô
+                    }}
+                  >
+                    {page}
+                  </Typography>
                 </MenuItem>
               ))}
             </Menu>
@@ -85,8 +200,13 @@ function Header() {
                   mx: 2,
                   fontWeight: 'bold',
                   cursor: 'pointer',
-                  transition: 'color 0.3s',
-                  '&:hover': { color: '#4CAF50' }, // Hiệu ứng hover đổi màu
+                  transition: 'all 0.3s',
+                  padding: '8px 16px', // Đảm bảo vùng bấm rộng
+                  borderRadius: '4px', // Thêm bo góc
+                  '&:hover': {
+                    color: '#ffffff',
+                    backgroundColor: '#4CAF50', // Thay đổi màu nền khi hover
+                  },
                 }}
               >
                 {page}
@@ -96,7 +216,14 @@ function Header() {
 
           {/* Avatar và Menu người dùng */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, mr: 2, color: '#222831', fontWeight: 'bold' }}>
+            <Typography
+              sx={{
+                display: { xs: 'none', md: 'block' },
+                mr: 2,
+                color: '#222831',
+                fontWeight: 'bold',
+              }}
+            >
               {localStorage.getItem('userName')}
             </Typography>
             {userLoggedIn ? (
@@ -128,7 +255,12 @@ function Header() {
                   fontWeight: 'bold',
                   cursor: 'pointer',
                   transition: 'color 0.3s',
-                  '&:hover': { color: '#4CAF50' }, 
+                  '&:hover': {
+                    color: '#ffffff',
+                    backgroundColor: '#4CAF50',
+                  },
+                  padding: '8px 16px',
+                  borderRadius: '4px',
                 }}
               >
                 Login
@@ -142,3 +274,4 @@ function Header() {
 }
 
 export default Header;
+

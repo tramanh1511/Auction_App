@@ -18,6 +18,11 @@ async function saveBid(bid) {
     await Bid.create(bid);
 }
 
+async function deleteBidById(auctionId, userId) {
+    return await Bid.deleteMany({ auctionId: auctionId, userId: userId });
+}
+
+
 async function createNewBid(bid) {
     const newBid = Object.assign(bid, {
         bidId: generateUuid(),
@@ -33,4 +38,5 @@ module.exports = {
     getBidsByUserId,
     getBidsByAuctionId,
     createNewBid,
+    deleteBidById
 }

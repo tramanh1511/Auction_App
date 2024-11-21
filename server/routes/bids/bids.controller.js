@@ -2,6 +2,7 @@ const {
     getBidsByAuctionId,
     getBidsByUserId,
     createNewBid,
+    deleteBidById
 } = require('../../models/bids.model');
 
 const {
@@ -72,8 +73,24 @@ async function httpAddNewBid(req, res) {
     return res.status(201).json(bid);
 }
 
+async function httpDeleteBidById(req, res) {
+    const userId = req.params.userId;  // Get userId from the URL params
+    const auctionId = req.params.auctionId;  // Get auctionId from the URL params
+
+    const deletingBid = await getAuctionById(auctionId);  // Get auction info by auctionId
+
+    if (deletingBid) {
+        // Delete all bids for the user in the given auction
+        await deleteBidById(auctionId, userId);
+        return res.status(200).json({ message: 'All bids deleted successfully for this auction and user.' });
+    } else {
+        return res.status(400).json({ error: "Cannot delete bid: Auction not found or invalid." });
+    }
+}
+
 module.exports = {
     httpGetAllBidsOfUser,
     httpAddNewBid,
     httpGetHighestBid,
+    httpDeleteBidById
 }

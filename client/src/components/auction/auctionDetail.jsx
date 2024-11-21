@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, Button } from '@mui/material';
 import { format } from 'date-fns';
+import axios from 'axios';
 
 const styles = {
     title: {
@@ -144,40 +145,69 @@ function AuctionDetail() {
         // handleRegister();
     }, [auctionId, currentUser]);
 
-    const handleDelete = async () => {
-        const confirmDelete = window.confirm('Are you sure?');
-        if (confirmDelete) {
-            try {
-                const response = await fetch(`http://localhost:3000/api/v1/auctions/${auctionId}`, {
-                    method: 'DELETE',
-                });
-                if (response.ok) {
-                    window.alert('Auction deleted successfully');
-                    window.history.back();
-                } else {
-                    console.error('Failed to delete auction');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
+    // const handleDelete = async () => {
+    //     const confirmDelete = window.confirm('Are you sure?');
+    //     if (confirmDelete) {
+    //         try {
+    //             const response = await fetch(`http://localhost:3000/api/v1/auctions/${auctionId}`, {
+    //                 method: 'DELETE',
+    //             });
+    //             if (response.ok) {
+    //                 window.alert('Auction deleted successfully');
+    //                 window.history.back();
+    //             } else {
+    //                 console.error('Failed to delete auction');
+    //             }
+    //         } catch (error) {
+    //             console.error('Delete error:', error);
+    //         }
+    //     }
+    // };
+
+    const handleDelete = async (e) => {
+        const confirmDelete = window.confirm("Are you sure?");
+
+        if(confirmDelete) {
+            const response = await axios.patch(`http://localhost:3000/api/v1/auctions/${auctionId}`, {
+                request: "Delete",
+                approved: false
+            });
+            if(response.status === 200) {
+                window.alert("Deletion request submitted for Admin review.");
+                window.history.back()
             }
         }
     };
 
+    const removeBid = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/v1/bids/${currentUser}/${auctionId}`, {
+                method: 'DELETE',
+            });
+
+            if (response.ok) {
+                console.log('Bids removed successfully');
+            } else {
+                console.error('Failed to remove bids');
+            }
+
+            console.log("Auction unregister in handle", auction.currentUsers);
+        } catch (error) {
+            console.error('Error removing bids:', error);
+        }
+    };
+
     const handleUnregister = async () => {
-        // Show confirmation dialog before proceeding
     const confirmUnregister = window.confirm('Bạn có muốn hủy đăng ký không?');
 
     if (!confirmUnregister) {
         console.log('User canceled unregister.');
-        return; // Exit the function if the user cancels
+        return; 
     }
-
-        // Check if auction data is available
         if (!auction) {
             console.error('Auction data is not available.');
             return; 
         }
-        // Check if the user is already registered
         if (!auction.currentUsers.includes(currentUser)) {
             console.log("User is already unregistered");
             setIsRegistered(false);
@@ -198,6 +228,7 @@ function AuctionDetail() {
             });
 
             if (response.ok) {
+                // removeBid();
                 alert('Hủy đăng ký thành công!');
                 setIsRegistered(false);
                 setAuction(updatedAuctionData); 
@@ -262,32 +293,37 @@ function AuctionDetail() {
         return <div>Loading...</div>;
     }
 
-const handleResult = async () => {//+
-    try {//+
-        const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);//+
-        const data = await response.json();//+
-        //+
-        if (data && data.userId) {//+
-            const userResponse = await fetch(`http://localhost:3000/api/v1/users/${data.userId}`);//+
-            const userData = await userResponse.json();//+
-            //+
-                alert(`Auction Result:
-                Winner: ${userData.name}
-                Winning Bid: $${data.price}
-                Auction Title: ${auction.title}`);
-        } else {//+
-            alert("No winner found for this auction.");//+
-        }//+
-    } catch (error) {//+
-        console.error('Error fetching result:', error);//+
-        alert("An error occurred while fetching the result.");//+
-    }//+
-};//+
-
-    
+const handleResult = async () => {
+    try {
+        const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);
+        const data = await response.json();
+        
+        if (data && data.userId) {
+            const userResponse = await fetch(`http://localhost:3000/api/v1/users/${data.userId}`);
+            const userData = await userResponse.json();
+            auction.winner = userData.userID;
+            alert(`Auction Result:
+            Winner: ${userData.name}
+            Winning Bid: $${data.price}
+            Auction Title: ${auction.title}`);
+        } else {
+            alert("No winner found for this auction.");
+        }
+    } catch (error) {
+        console.error('Error fetching result:', error);
+        alert("An error occurred while fetching the result.");
+    }
+};
+    const startRegister = new Date(auction.startRegister);
+    const endRegister = new Date(auction.endRegister);
+    const startTime = new Date(auction.startTime);
     const endTime = new Date(auction.endTime);
     const now = new Date();
+
+    const checkTimeOutForRegister =now - endRegister;
     const checkTimeOutForBidding = now - endTime;
+    const checkTimeInForRegister =now - startRegister;
+    const checkTimeInForBidding = now - startTime;
 
     return (
         <>
@@ -300,7 +336,7 @@ const handleResult = async () => {//+
                     <Box component="img" src={auction.imageUrl} sx={{ ...styles.image, maxWidth: '100%', height: 'auto', marginBottom: '20px' }} />
 
                     <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                        {checkTimeOutForBidding < 0 && !isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                        {checkTimeOutForRegister < 0 && checkTimeInForRegister >= 0 && !isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
                             <Button
                                 variant="contained"
                                 sx={{ ...styles.registerButton, minWidth: '120px' }}
@@ -310,7 +346,7 @@ const handleResult = async () => {//+
                             </Button>
                         )}
 
-                        {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                        {checkTimeOutForRegister < 0 && checkTimeInForRegister >= 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
                             <Button
                                 variant="contained"
                                 sx={{ ...styles.registerButton, minWidth: '120px' }}
@@ -320,7 +356,7 @@ const handleResult = async () => {//+
                             </Button>
                         )}
 
-                        {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                        {checkTimeOutForBidding < 0 && checkTimeInForBidding >= 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
                             <Button
                                 variant="contained"
                                 sx={{ ...styles.biddingButton, minWidth: '120px' }}
@@ -383,12 +419,22 @@ const handleResult = async () => {//+
                 </Box>
 
                 <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Start at:</Typography>
+                    <Typography variant="body1" sx={styles.title}>Start Register at:</Typography>
+                    <Typography variant="body1" sx={styles.content}>{format(new Date(auction.startRegister), 'dd/MM/yyyy hh:mm')}</Typography>
+                </Box>
+
+                <Box sx={styles.row}>
+                    <Typography variant="body1" sx={styles.title}>End Register at:</Typography>
+                    <Typography variant="body1" sx={styles.content}>{format(new Date(auction.endRegister), 'dd/MM/yyyy hh:mm')}</Typography>
+                </Box>
+
+                <Box sx={styles.row}>
+                    <Typography variant="body1" sx={styles.title}>Start Auction at:</Typography>
                     <Typography variant="body1" sx={styles.content}>{format(new Date(auction.startTime), 'dd/MM/yyyy hh:mm')}</Typography>
                 </Box>
 
                 <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>End at:</Typography>
+                    <Typography variant="body1" sx={styles.title}>End Auction at:</Typography>
                     <Typography variant="body1" sx={styles.content}>{format(new Date(auction.endTime), 'dd/MM/yyyy hh:mm')}</Typography>
                 </Box>
 

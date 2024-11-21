@@ -34,11 +34,23 @@ const auctionsSchema = new mongoose.Schema({
         type: Boolean,
         required: true,
     },
+    request: {
+        type: String,
+        required: true,
+    },
     lastUpdated: {
         type: String,
         required: true,
     },
     status: {
+        type: String,
+        required: true,
+    },
+    startRegister: {
+        type: String,
+        required: true,
+    },
+    endRegister: {
         type: String,
         required: true,
     },
@@ -66,6 +78,10 @@ const auctionsSchema = new mongoose.Schema({
     },
     highestPrice : {
         type: Number,
+    },
+    money : {
+        type: Number,
+        // required: true,
     }
 });
 

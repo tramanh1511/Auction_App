@@ -2,10 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { Grid } from '@mui/material';
 import AuctionCard from './auctionCard';
 
-function AuctionList() {
+function AuctionList({ auctions }) {
     const [auctionList, setAuctionList] = useState([]);
 
     useEffect(() => {
+        //     if (auctions) {
+        //         const fetchData = async () => {
+        //             try {
+        //                 const response = await fetch("http://localhost:3000/api/v1/auctions/");
+        //                 const data = await response.json();
+        //                 setAuctionList(data);
+        //             } catch (error) {
+        //                 console.error('Fetch error:', error);
+        //             }
+        //         };
+
+        //         fetchData();
+        //     }
+        //     else {
+        //         setAuctionList(auctions);
+        //     }
+        // }, [auctions]);
         const fetchData = async () => {
             try {
                 const response = await fetch("http://localhost:3000/api/v1/auctions/");
@@ -17,7 +34,7 @@ function AuctionList() {
         };
 
         fetchData();
-    }, []);
+    },[]);
 
     return (
         <Grid container spacing={4}>

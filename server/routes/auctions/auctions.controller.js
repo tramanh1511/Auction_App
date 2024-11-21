@@ -1,6 +1,6 @@
 const {
     getAuctionById,
-    approveAuctionById,
+    approveAuctionReqById,
     getAuctionByUserId,
     createNewAuction,
     deleteAuctionById,
@@ -26,7 +26,7 @@ async function httpGetAllAuctionTrue(req, res) {
 async function httpGetAuctionById(req, res) {
     const auctionId = req.params.id;
     const auction = await getAuctionById(auctionId);
-    
+
     if (!auction) {
         return res.status(404).json({ error: 'Auction not found' });
     }
@@ -38,7 +38,7 @@ async function httpGetAuctionById(req, res) {
 async function httpGetAuctionByUserId(req, res) {
     const userId = req.params.id;
     console.log(userId);
-    
+
     const auction = await getAuctionByUserId(userId);
     if (!auction) {
         return res.status(404).json({ error: 'Auction not found' });
@@ -48,64 +48,81 @@ async function httpGetAuctionByUserId(req, res) {
     return res.status(200).json(auction);
 }
 
-async function httpApproveAuctionById(req, res) {
+async function httpApproveAuctionReqById(req, res) {
     const auctionId = req.params.id;
-    const auction = await approveAuctionById(auctionId);
+    const updateData = req.body;
+    // const auction = await approveAuctionById(auctionId);
 
-    if (!auction) {
-        return res.status(400).json({ error: "Auction not found" });
-    }
+    // if (!auction) {
+    //     return res.status(400).json({ error: "Auction not found" });
+    // }
 
-    return res.status(200).json(auction);
-}
-
-async function httpUpdateAuctionById(req, res) {
-    const auction = req.body; // Lấy dữ liệu từ frontend
-    auction.id =req.params.id;
-
+    // return res.status(200).json(auction);
     try {
-        const updatedAuction = await updateAuctionById(auction)        
-        return res.status(200).json(updatedAuction);
-    } catch (err) {
-        console("Error on auction controller update");
-        return res.status(400).json({
-            error: err.message,
+        const auction = await approveAuctionReqById(auctionId, updateData);
+
+        if (!auction) {
+            return res.status(400).json({
+                error: "Auction not found"
+            });
+        }
+
+        return res.status(200).json(auction);
+    } catch (error) {
+        console.error("Error updating auction:", error);
+        return res.status(500).json({
+            error: "Internal server error"
         });
     }
 }
 
+    async function httpUpdateAuctionById(req, res) {
+        const auction = req.body; // Lấy dữ liệu từ frontend
+        auction.id = req.params.id;
 
-async function httpAddNewAuction(req, res) {
-    const auction = req.body;
-
-    try {
-        const createdAuction = await createNewAuction(auction);
-        return res.status(201).json(createdAuction);
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({ error: err.message });
+        try {
+            const updatedAuction = await updateAuctionById(auction)
+            return res.status(200).json(updatedAuction);
+        } catch (err) {
+            console("Error on auction controller update");
+            return res.status(400).json({
+                error: err.message,
+            });
+        }
     }
-}
 
-async function httpDeleteAuctionById(req, res) {
-    const auctionId = req.params.id;
-    const deletingAuction = await getAuctionById(auctionId);
 
-    if (deletingAuction) {
-        await deleteAuctionById(auctionId);
-        return res.status(200).json({ message: 'Auction deleted successfully' });
-    } else {
-        return res.status(400).json({ error: "Backend bảo không xóa được!" });
+    async function httpAddNewAuction(req, res) {
+        const auction = req.body;
+
+        try {
+            const createdAuction = await createNewAuction(auction);
+            return res.status(201).json(createdAuction);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).json({ error: err.message });
+        }
     }
-}
 
-module.exports = {
-    httpGetAllAuctionFalse,
-    httpGetAllAuctionTrue,
-    httpGetAuctionById,
-    httpGetAuctionByUserId,
-    httpAddNewAuction,
-    httpApproveAuctionById,
-    httpDeleteAuctionById,
-    httpUpdateAuctionById,
-};
+    async function httpDeleteAuctionById(req, res) {
+        const auctionId = req.params.id;
+        const deletingAuction = await getAuctionById(auctionId);
+
+        if (deletingAuction) {
+            await deleteAuctionById(auctionId);
+            return res.status(200).json({ message: 'Auction deleted successfully' });
+        } else {
+            return res.status(400).json({ error: "Backend bảo không xóa được!" });
+        }
+    }
+
+    module.exports = {
+        httpGetAllAuctionFalse,
+        httpGetAllAuctionTrue,
+        httpGetAuctionById,
+        httpGetAuctionByUserId,
+        httpAddNewAuction,
+        httpApproveAuctionReqById,
+        httpDeleteAuctionById,
+        httpUpdateAuctionById,
+    };
