@@ -15,8 +15,9 @@ export default function createAuction() {
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
     const [error, setError] = useState("");
-    const [deposit, setDeposit] = useState("");
     const [stepPrice, setStepPrice] = useState("");
+    const [startRegister, setStartRegister] = useState("");
+    const [endRegister, setEndRegister] = useState("");
 
     const isValidUrl = (url) => {
         try {
@@ -30,7 +31,7 @@ export default function createAuction() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!category || !title || !description || !initPrice || !startTime || !endTime || !stepPrice || !deposit) {
+        if (!category || !title || !description || !initPrice || !startTime || !endTime || !stepPrice || !startRegister || !endRegister) {
             setError("Please fill in all required fields.");
             return;
         }
@@ -39,7 +40,7 @@ export default function createAuction() {
             setError("Please enter a valid URL for the image.");
             return;
         }
-        axios.post("http://localhost:3000/api/v1/auctions", { userId, category, title, description, imageUrl, initPrice, stepPrice, deposit, startTime, endTime })
+        axios.post("http://localhost:3000/api/v1/auctions", { userId, category, title, description, imageUrl, initPrice, stepPrice, startTime, endTime, startRegister, endRegister })
             .then((result) => {
                 if (result.status === 201) {
                     window.alert("Create Success");
@@ -101,16 +102,7 @@ export default function createAuction() {
                                         variant="outlined"
                                     />
                                 </Grid>
-                                <Grid item xs={12}>
-                                    <TextField
-                                        label="Deposit"
-                                        type="number"
-                                        fullWidth
-                                        value={deposit}
-                                        onChange={(e) => setDeposit(e.target.value)}
-                                        variant="outlined"
-                                    />
-                                </Grid>
+                            
                                 <Grid item xs={12}>
                                     <TextField
                                         label="Step Price"
@@ -121,8 +113,6 @@ export default function createAuction() {
                                         variant="outlined"
                                     />
                                 </Grid>
-
-                                
 
                                 <Grid item xs={12}>
                                     <TextField
@@ -136,7 +126,35 @@ export default function createAuction() {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
-                                        label="Start time"
+                                        label="Start Register Time"
+                                        type="datetime-local"
+                                        fullWidth
+                                        value={startRegister}
+                                        onChange={(e) => setStartRegister(e.target.value)}
+                                        variant="outlined"
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label="End Register Time"
+                                        type="datetime-local"
+                                        fullWidth
+                                        value={endRegister}
+                                        onChange={(e) => setEndRegister(e.target.value)}
+                                        variant="outlined"
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+
+                                    />
+                                </Grid>
+
+                                <Grid item xs={12}>
+                                    <TextField
+                                        label="Start Auction time"
                                         type="datetime-local"
                                         fullWidth
                                         value={startTime}
@@ -149,7 +167,7 @@ export default function createAuction() {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <TextField
-                                        label="End Time"
+                                        label="End Auction Time"
                                         type="datetime-local"
                                         fullWidth
                                         value={endTime}
@@ -160,7 +178,9 @@ export default function createAuction() {
                                         }}
 
                                     />
+                                    
                                 </Grid>
+
                             </Grid>
                             <Box sx={{ mt: 3 }}>
                                 {error && <Alert severity="error">{error}</Alert>}

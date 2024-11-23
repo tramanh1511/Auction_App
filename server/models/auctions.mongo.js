@@ -54,15 +54,19 @@ const auctionsSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    startRegister: {
+        type: String,
+        required: true,
+    },
+    endRegister: {
+        type: String,
+        required: true,
+    },
     winner: {
         type: String,
     },
     currentUsers : {
         type: Array,
-    },
-    deposit : {
-        type: Number,
-        required: true,
     },
     stepPrice : {
         type: Number,

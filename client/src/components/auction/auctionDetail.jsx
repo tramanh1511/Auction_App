@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { startTransition, useEffect, useState } from 'react';
 import { useParams, useNavigate, } from 'react-router-dom';
 import { Box, Typography, Card, Button } from '@mui/material';
+import CountdownTimer from './countDownTime';
 import { format } from "date-fns";
 import axios from 'axios';
 
@@ -135,6 +136,7 @@ function AuctionDetail() {
                 const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);
                 const data = await response.json();
                 setHighestPrice(data.price);
+                // auction.highestPrice = data.price;
             } catch (error) {
                 console.error('use effect Fetch highest price error:', error);
             }
@@ -147,12 +149,12 @@ function AuctionDetail() {
     const handleDelete = async (e) => {
         const confirmDelete = window.confirm("Are you sure?");
 
-        if(confirmDelete) {
+        if (confirmDelete) {
             const response = await axios.patch(`http://localhost:3000/api/v1/auctions/${auctionId}`, {
                 request: "Delete",
                 approved: false
             });
-            if(response.status === 200) {
+            if (response.status === 200) {
                 window.alert("Deletion request submitted for Admin review.");
                 window.history.back()
             }
@@ -161,30 +163,30 @@ function AuctionDetail() {
 
     const handleUnregister = async () => {
         // Show confirmation dialog before proceeding
-    const confirmUnregister = window.confirm('Bạn có muốn hủy đăng ký không?');
+        const confirmUnregister = window.confirm('Bạn có muốn hủy đăng ký không?');
 
-    if (!confirmUnregister) {
-        console.log('User canceled unregister.');
-        return; // Exit the function if the user cancels
-    }
+        if (!confirmUnregister) {
+            console.log('User canceled unregister.');
+            return; // Exit the function if the user cancels
+        }
 
         // Check if auction data is available
         if (!auction) {
             console.error('Auction data is not available.');
-            return; 
+            return;
         }
         // Check if the user is already registered
         if (!auction.currentUsers.includes(currentUser)) {
             console.log("User is already unregistered");
             setIsRegistered(false);
-            return; 
+            return;
         }
         try {
             const updatedCurrentUsers = auction.currentUsers.filter(user => user !== currentUser);
             const updatedAuctionData = {
-                ...auction, 
+                ...auction,
                 currentUsers: updatedCurrentUsers
-                }
+            }
             const response = await fetch(`http://localhost:3000/api/v1/auctions/update/${auctionId}`, {
                 method: 'PATCH',
                 headers: {
@@ -196,7 +198,7 @@ function AuctionDetail() {
             if (response.ok) {
                 alert('Hủy đăng ký thành công!');
                 setIsRegistered(false);
-                setAuction(updatedAuctionData); 
+                setAuction(updatedAuctionData);
                 console.log("Auction unregistered successfully:", updatedAuctionData);
             } else {
                 alert('Hủy đăng ký không thành công. Vui lòng thử lại sau.');
@@ -204,26 +206,26 @@ function AuctionDetail() {
             }
 
             console.log("Auction unregister in handle", auction.currentUsers);
-            } catch (error) {
-                console.error('Unregistration error in handle:', error);
-            }
+        } catch (error) {
+            console.error('Unregistration error in handle:', error);
+        }
 
     };
 
     const handleRegister = async () => {
         if (!auction) {
             console.error('Auction data is not available.');
-            return; 
+            return;
         }
         if (auction.currentUsers.includes(currentUser)) {
             console.log("User is already registered");
             setIsRegistered(true);
-            return; 
+            return;
         }
         try {
             const updatedCurrentUsers = [...auction.currentUsers, currentUser];
             const updatedAuctionData = {
-                ...auction, 
+                ...auction,
                 currentUsers: updatedCurrentUsers,
             };
             const response = await fetch(`http://localhost:3000/api/v1/auctions/update/${auctionId}`, {
@@ -256,45 +258,71 @@ function AuctionDetail() {
         return <div>Loading...</div>;
     }
 
-const handleResult = async () => {//+
-    try {//+
-        const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);//+
-        const data = await response.json();//+
-        //+
-        if (data && data.userId) {//+
-            const userResponse = await fetch(`http://localhost:3000/api/v1/users/${data.userId}`);//+
-            const userData = await userResponse.json();//+
-            //+
-                alert(`Auction Result:
-                Winner: ${userData.name}
-                Winning Bid: $${data.price}
-                Auction Title: ${auction.title}`);
-        } else {//+
-            alert("No winner found for this auction.");//+
-        }//+
-    } catch (error) {//+
-        console.error('Error fetching result:', error);//+
-        alert("An error occurred while fetching the result.");//+
-    }//+
-};//+
+    const handleResult = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/v1/bids/highestPrice/${auctionId}`);
+            const data = await response.json();
 
-    
+            if (data && data.userId) {
+                const userResponse = await fetch(`http://localhost:3000/api/v1/users/${data.userId}`);
+                const userData = await userResponse.json();
+                alert(`Auction Result:
+                    Winner: ${userData.name}
+                    Winning Bid: $${data.price}
+                    Auction Title: ${auction.title}`);
+            } else {
+                alert("No winner found for this auction.");
+            }
+        } catch (error) {
+            console.error('Error fetching result:', error);
+            alert("An error occurred while fetching the result.");
+        }
+    };
+
+    const startRegister = new Date(auction.startRegister);
+    const endRegister = new Date(auction.endRegister);
+    const startTime = new Date(auction.startTime);
     const endTime = new Date(auction.endTime);
     const now = new Date();
+
+    const checkTimeOutForRegister = now - endRegister;
     const checkTimeOutForBidding = now - endTime;
+    const checkTimeInForRegister = now - startRegister;
+    const checkTimeInForBidding = now - startTime;
+
+    const isRegisterPeriod = checkTimeInForRegister >= 0 && checkTimeOutForRegister <= 0;
+    const isAuctionPeriod = checkTimeInForBidding >= 0 && checkTimeOutForBidding <= 0;
+    const start_time = isRegisterPeriod ? startRegister : startTime;
+    const end_time = isRegisterPeriod ? endRegister : endTime;
 
     return (
         <>
-            <Card sx={styles.card}>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '1rem', marginTop: '10px', textAlign: 'center' }}>
-                    Auction Detail
-                </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '1rem', marginTop: '10px', textAlign: 'center' }}>
+                Auction Detail
+            </Typography>
 
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+            <Box sx={{
+                backgroundColor: '#f0f8ff',
+                borderRadius: '8px',
+                padding: '15px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                margin: '20px 0',
+                textAlign: 'center',
+            }}>
+                <Typography variant="h6" sx={{ marginBottom: '10px', color: '#4caf50', fontWeight: 'bold' }}>
+                {isRegisterPeriod ? 'Register Time Remaining' : 'Auction Time Remaining'}
+                </Typography>
+                <CountdownTimer startTime={start_time} endTime={end_time} />
+            </Box>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '20px' }}>
+                {/* Left Column */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <Box component="img" src={auction.imageUrl} sx={{ ...styles.image, maxWidth: '100%', height: 'auto', marginBottom: '20px' }} />
 
                     <Box sx={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                        {checkTimeOutForBidding < 0 && !isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                        {/* Register/Unregister Buttons */}
+                        {checkTimeOutForRegister < 0 && checkTimeInForRegister >= 0 && !isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
                             <Button
                                 variant="contained"
                                 sx={{ ...styles.registerButton, minWidth: '120px' }}
@@ -303,8 +331,7 @@ const handleResult = async () => {//+
                                 Register
                             </Button>
                         )}
-
-                        {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                        {checkTimeOutForRegister < 0 && checkTimeInForRegister >= 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
                             <Button
                                 variant="contained"
                                 sx={{ ...styles.registerButton, minWidth: '120px' }}
@@ -313,8 +340,7 @@ const handleResult = async () => {//+
                                 Unregister
                             </Button>
                         )}
-
-                        {checkTimeOutForBidding < 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
+                        {checkTimeOutForBidding < 0 && checkTimeInForBidding >= 0 && isRegistered && userRole !== 'admin' && auction.userId !== currentUser && (
                             <Button
                                 variant="contained"
                                 sx={{ ...styles.biddingButton, minWidth: '120px' }}
@@ -323,7 +349,6 @@ const handleResult = async () => {//+
                                 Bidding
                             </Button>
                         )}
-
                         {(userRole === 'admin' || auction.userId === currentUser) && (
                             <Button
                                 variant="contained"
@@ -336,91 +361,84 @@ const handleResult = async () => {//+
                         )}
                         {checkTimeOutForBidding >= 0 && (
                             <Button
-                            variant="contained"
-                            sx={styles.registerButton}
-                            onClick={handleResult}
+                                variant="contained"
+                                sx={styles.registerButton}
+                                onClick={handleResult}
                             >
-                            Auction has ended
+                                View Result
                             </Button>
                         )}
                     </Box>
                 </Box>
 
+                {/* Right Column for Auction Description */}
+                <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    {/* Description of the Auction */}
+                    <Typography variant="body1" sx={{ marginTop: '0.5rem', fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                        {auction.title}
+                    </Typography>
 
-                <Typography variant="body1" sx={{ marginTop: '0.5rem', fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                    {auction.title}
-                </Typography>
-
-
-                {/* Start of Row for each section */}
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Init price:</Typography>
-                    <Typography variant="body1" sx={{ ...styles.content, ...styles.initPrice }}>${auction.initPrice}</Typography>
-                </Box>
-
-                {/* Display the highest price just after initPrice */}
-                {highestPrice && (
                     <Box sx={styles.row}>
-                        <Typography variant="body1" sx={styles.title}>Highest Price:</Typography>
-                        <Typography variant="body1" sx={{ ...styles.content, ...styles.highestPrice }}>${highestPrice}</Typography>
+                        <Typography variant="body1" sx={styles.title}>Init price:</Typography>
+                        <Typography variant="body1" sx={{ ...styles.content, ...styles.initPrice }}>${auction.initPrice}</Typography>
                     </Box>
-                )}
 
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>AuctionID:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{auction.auctionId}</Typography>
+                    {highestPrice && (
+                        <Box sx={styles.row}>
+                            <Typography variant="body1" sx={styles.title}>Highest Price:</Typography>
+                            <Typography variant="body1" sx={{ ...styles.content, ...styles.highestPrice }}>${highestPrice}</Typography>
+                        </Box>
+                    )}
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>AuctionID:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{auction.auctionId}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>Description:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{auction.description}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>Start register at:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{format(new Date(auction.startRegister), 'dd/MM/yyyy hh:mm')}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>End register at:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{format(new Date(auction.endRegister), 'dd/MM/yyyy hh:mm')}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>Start auction at:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{format(new Date(auction.startTime), 'dd/MM/yyyy hh:mm')}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>End auction at:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{format(new Date(auction.endTime), 'dd/MM/yyyy hh:mm')}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>Step Price:</Typography>
+                        <Typography variant="body1" sx={styles.content}>${auction.stepPrice}</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>Auction Method:</Typography>
+                        <Typography variant="body1" sx={styles.content}>Incremental and continuous bidding</Typography>
+                    </Box>
+
+                    <Box sx={styles.row}>
+                        <Typography variant="body1" sx={styles.title}>Owner:</Typography>
+                        <Typography variant="body1" sx={styles.content}>{userData.name}</Typography>
+                    </Box>
                 </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Description:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{auction.description}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Start at:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{format(new Date(auction.startTime), 'dd/MM/yyyy hh:mm')}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>End at:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{format(new Date(auction.endTime), 'dd/MM/yyyy hh:mm')}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Registration fee:</Typography>
-                    <Typography variant="body1" sx={styles.content}>${auction.deposit}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Step Price:</Typography>
-                    <Typography variant="body1" sx={styles.content}>${auction.stepPrice}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Auction Method:</Typography>
-                    <Typography variant="body1" sx={styles.content}>Incremental and continuous bidding</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Owner:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{userData.name}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Viewing Time:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{auction.viewingTime || 'To be decided'}</Typography>
-                </Box>
-
-                <Box sx={styles.row}>
-                    <Typography variant="body1" sx={styles.title}>Viewing address:</Typography>
-                    <Typography variant="body1" sx={styles.content}>{auction.viewingAddress || 'To be decided'}</Typography>
-                </Box>
-
-            </Card>
+            </Box>
         </>
+
     );
 }
 
 export default AuctionDetail;
-
-

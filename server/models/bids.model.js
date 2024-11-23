@@ -3,6 +3,9 @@ const Bid = require('./bids.mongo');
 const {
     generateUuid
 } = require('../services/uuid');
+const {
+    getUserById
+} = require('./users.model');
 
 async function getBidsByUserId(userId) {
     return await Bid
@@ -29,8 +32,21 @@ async function createNewBid(bid) {
     await saveBid(newBid);
 }
 
+async function deleteBidById(bidId) {
+    // await Bid.deleteOne({ bidId: bidId });
+    const bid = Bid.findOneAndDelete({bidId: bidId});
+    return bid;
+}
+
+async function getBidById(bidId) {
+    return await Bid
+        .findOne({ bidId: bidId });
+}
+
 module.exports = {
     getBidsByUserId,
     getBidsByAuctionId,
     createNewBid,
+    deleteBidById,
+    getBidById
 }

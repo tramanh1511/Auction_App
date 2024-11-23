@@ -2,6 +2,8 @@ const {
     getBidsByAuctionId,
     getBidsByUserId,
     createNewBid,
+    deleteBidById,
+    getBidById
 } = require('../../models/bids.model');
 
 const {
@@ -72,8 +74,34 @@ async function httpAddNewBid(req, res) {
     return res.status(201).json(bid);
 }
 
+async function httpDeleteBidById(req, res) {
+    const bidId = req.params.id;
+    const deletingBid = await getBidById(bidId);
+    
+    if (deletingBid) {
+        await deleteBidById(bidId);
+        return res.status(200).json({ message: 'Bid removed successfully'});
+    } else {
+        return res.status(400).json({ error: "backend ko xoa dc bid"});
+    }
+}
+
+async function httpGetBidById(req, res) {
+    const bidId = req.params.id;
+    const bid = await getBidById(bidId);
+    if (!bid) {
+        return res.status(404).json({
+            error: 'Bid not found',
+        });
+    }
+    return res.status(200).json(bid);
+ 
+}
+
 module.exports = {
     httpGetAllBidsOfUser,
     httpAddNewBid,
     httpGetHighestBid,
+    httpDeleteBidById,
+    httpGetBidById
 }

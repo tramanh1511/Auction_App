@@ -31,10 +31,10 @@ function AuctionCard({ auction }) {
                         Init Price: ${initPrice}
                     </Typography>
                     <Typography variant="body1" sx={{ marginTop: '0.5rem' }}>
-                        Start at: {format(new Date(startTime), 'dd/MM/yyyy hh:mm')}
+                        Start Auction at: {format(new Date(startTime), 'dd/MM/yyyy hh:mm')}
                     </Typography>
                     <Typography variant="body1" sx={{ marginTop: '0.5rem' }}>
-                        End at: {format(new Date(endTime), 'dd/MM/yyyy hh:mm')}
+                        End Auction at: {format(new Date(endTime), 'dd/MM/yyyy hh:mm')}
                     </Typography>
                     <CountdownTimer startTime={startTime} endTime={endTime}></CountdownTimer>
                 </CardContent>
